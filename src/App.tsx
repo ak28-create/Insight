@@ -197,7 +197,7 @@ export default function App() {
   const currentTabInfo = tabTitles[currentTab] || { title: 'InSight Retail', subtitle: 'Smart Inventory & POS' };
 
   return (
-    <div className="flex h-screen bg-slate-100/60 text-slate-900 font-sans antialiased overflow-hidden">
+    <div className="flex h-screen bg-[#f6f9fc] text-[#0a2540] font-sans antialiased overflow-hidden">
       {/* Sidebar Navigation */}
       <Sidebar
         currentTab={currentTab}

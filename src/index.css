@@ -1,1 +1,56 @@
 @import "tailwindcss";
+
+@layer base {
+  :root {
+    --stripe-blurple: #635bff;
+    --stripe-blurple-hover: #5346e0;
+    --stripe-navy: #0a2540;
+    --stripe-slate: #425466;
+    --stripe-light: #f6f9fc;
+    --stripe-border: #e3e8ee;
+    --stripe-cyan: #00d4ff;
+    --stripe-emerald: #00d924;
+  }
+
+  body {
+    background-color: #f6f9fc;
+    color: #0a2540;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Custom subtle scrollbar in Stripe style */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.6);
+}
+
+/* Stripe mesh gradient subtle background helper */
+.stripe-mesh-gradient {
+  background: radial-gradient(at 0% 0%, rgba(99, 91, 255, 0.12) 0px, transparent 50%),
+              radial-gradient(at 100% 0%, rgba(0, 212, 255, 0.10) 0px, transparent 50%),
+              radial-gradient(at 50% 100%, rgba(122, 115, 255, 0.08) 0px, transparent 50%);
+}
+
+.stripe-card-glow {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+}
+
+.stripe-card-glow:hover {
+  box-shadow: 0 4px 14px 0 rgba(10, 37, 64, 0.08), 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+}

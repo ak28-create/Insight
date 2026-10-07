@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { formatINR } from '../utils/formatters';
 
 interface TimeSeriesPoint {
-  label: string; // date or month string
+  label: string;
   displayLabel: string;
   revenue: number;
   profit: number;
@@ -24,7 +24,7 @@ export const RevenueTrendChart: React.FC<RevenueTrendChartProps> = ({
 
   if (!data || data.length === 0) {
     return (
-      <div className="h-48 flex items-center justify-center text-xs text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+      <div className="h-48 flex items-center justify-center text-xs text-[#425466] bg-[#f6f9fc] rounded-xl border border-dashed border-[#e3e8ee]">
         Record sales transactions to generate interactive revenue trend charts.
       </div>
     );
@@ -32,10 +32,9 @@ export const RevenueTrendChart: React.FC<RevenueTrendChartProps> = ({
 
   // Calculate scales
   const maxRevenue = Math.max(...data.map(d => d.revenue), 100);
-  const maxProfit = Math.max(...data.map(d => d.profit), 50);
-  const maxY = Math.ceil(maxRevenue * 1.15); // Add headroom for top label
+  const maxY = Math.ceil(maxRevenue * 1.15); // headroom
 
-  const padding = { top: 25, right: 20, bottom: 35, left: 60 };
+  const padding = { top: 25, right: 20, bottom: 35, left: 65 };
   const width = 600; // viewBox width for SVG responsiveness
 
   const chartWidth = width - padding.left - padding.right;
@@ -68,30 +67,31 @@ export const RevenueTrendChart: React.FC<RevenueTrendChartProps> = ({
 
   return (
     <div className="w-full relative">
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-xs font-bold text-slate-800 tracking-tight">{title}</h3>
-        <div className="flex items-center gap-4 text-[11px] font-medium text-slate-500">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-xs font-bold text-[#0a2540] tracking-tight">{title}</h3>
+        <div className="flex items-center gap-4 text-[11px] font-medium text-[#425466]">
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-600 inline-block"></span>
-            <span>Revenue</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-[#635bff] inline-block shadow-xs"></span>
+            <span>Gross Revenue</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 inline-block"></span>
+            <span className="w-2.5 h-2.5 rounded-full bg-[#059669] inline-block shadow-xs"></span>
             <span>Net Profit</span>
           </div>
         </div>
       </div>
 
-      <div className="w-full overflow-hidden bg-white rounded-xl border border-slate-200/80 p-2">
+      <div className="w-full overflow-hidden bg-white rounded-xl border border-[#e3e8ee] p-2 shadow-2xs relative">
         <svg
           viewBox={`0 0 ${width} ${height}`}
           className="w-full h-auto overflow-visible select-none"
           preserveAspectRatio="none"
         >
           <defs>
-            <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#d97706" stopOpacity="0.18" />
-              <stop offset="100%" stopColor="#d97706" stopOpacity="0.0" />
+            {/* Stripe blurple gradient */}
+            <linearGradient id="stripeRevGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#635bff" stopOpacity="0.22" />
+              <stop offset="100%" stopColor="#635bff" stopOpacity="0.0" />
             </linearGradient>
           </defs>
 
@@ -103,35 +103,35 @@ export const RevenueTrendChart: React.FC<RevenueTrendChartProps> = ({
                 y1={tick.y}
                 x2={width - padding.right}
                 y2={tick.y}
-                stroke="#e2e8f0"
-                strokeDasharray="3 3"
+                stroke="#f1f5f9"
                 strokeWidth="1"
+                strokeDasharray={i === 0 ? 'none' : '3 3'}
               />
               <text
                 x={padding.left - 8}
                 y={tick.y + 3}
                 textAnchor="end"
-                className="text-[10px] fill-slate-400 font-mono"
+                className="text-[9px] fill-slate-400 font-mono font-medium"
               >
-                {formatINR(tick.val, true)}
+                {tick.val >= 1000 ? `₹${Math.round(tick.val / 1000)}k` : `₹${Math.round(tick.val)}`}
               </text>
             </g>
           ))}
 
-          {/* Revenue Area Fill */}
-          <path d={revAreaPath} fill="url(#revGrad)" />
+          {/* Area fill */}
+          <path d={revAreaPath} fill="url(#stripeRevGrad)" />
 
-          {/* Revenue Line */}
+          {/* Revenue line (Stripe Blurple) */}
           <path
             d={revLinePath}
             fill="none"
-            stroke="#d97706"
+            stroke="#635bff"
             strokeWidth="2.5"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
 
-          {/* Profit Line */}
+          {/* Profit line (Stripe Emerald) */}
           <path
             d={profLinePath}
             fill="none"
@@ -142,16 +142,53 @@ export const RevenueTrendChart: React.FC<RevenueTrendChartProps> = ({
             strokeLinejoin="round"
           />
 
+          {/* Interactive points & hover listeners */}
+          {points.map((p, idx) => (
+            <g
+              key={idx}
+              onMouseEnter={() => setHoveredIdx(idx)}
+              onMouseLeave={() => setHoveredIdx(null)}
+              className="cursor-pointer"
+            >
+              <circle
+                cx={p.x}
+                cy={p.yRev}
+                r={hoveredIdx === idx ? 5 : 3}
+                fill="#ffffff"
+                stroke="#635bff"
+                strokeWidth={hoveredIdx === idx ? 3 : 2}
+                className="transition-all"
+              />
+              <circle
+                cx={p.x}
+                cy={p.yProf}
+                r={hoveredIdx === idx ? 4 : 2}
+                fill="#ffffff"
+                stroke="#059669"
+                strokeWidth={hoveredIdx === idx ? 2.5 : 1.5}
+                className="transition-all"
+              />
+              {/* Invisible wide hit area */}
+              <rect
+                x={p.x - 12}
+                y={padding.top}
+                width={24}
+                height={chartHeight}
+                fill="transparent"
+              />
+            </g>
+          ))}
+
           {/* X axis labels */}
-          {points.map((p, i) => {
-            if (i % step === 0 || i === points.length - 1) {
+          {points.map((p, idx) => {
+            if (idx % step === 0 || idx === points.length - 1) {
               return (
                 <text
-                  key={i}
+                  key={idx}
                   x={p.x}
                   y={height - 10}
                   textAnchor="middle"
-                  className="text-[10px] fill-slate-500 font-medium"
+                  className="text-[9px] fill-slate-400 font-mono"
                 >
                   {p.displayLabel}
                 </text>
@@ -159,59 +196,27 @@ export const RevenueTrendChart: React.FC<RevenueTrendChartProps> = ({
             }
             return null;
           })}
-
-          {/* Interactive hover columns */}
-          {points.map((p, i) => (
-            <rect
-              key={i}
-              x={p.x - (chartWidth / points.length) / 2}
-              y={padding.top}
-              width={chartWidth / points.length}
-              height={chartHeight}
-              fill="transparent"
-              className="cursor-pointer"
-              onMouseEnter={() => setHoveredIdx(i)}
-              onMouseLeave={() => setHoveredIdx(null)}
-            />
-          ))}
-
-          {/* Active hover crosshair and points */}
-          {hoveredPoint && (
-            <g>
-              <line
-                x1={hoveredPoint.x}
-                y1={padding.top}
-                x2={hoveredPoint.x}
-                y2={padding.top + chartHeight}
-                stroke="#94a3b8"
-                strokeWidth="1.5"
-                strokeDasharray="2 2"
-              />
-              <circle cx={hoveredPoint.x} cy={hoveredPoint.yRev} r="4.5" fill="#d97706" stroke="#fff" strokeWidth="2" />
-              <circle cx={hoveredPoint.x} cy={hoveredPoint.yProf} r="4" fill="#059669" stroke="#fff" strokeWidth="2" />
-            </g>
-          )}
         </svg>
 
-        {/* Hover Tooltip Overlay */}
+        {/* Hover Tooltip in Stripe Card Style */}
         {hoveredPoint && (
           <div
-            className="absolute top-12 left-1/2 -translate-x-1/2 bg-slate-900 text-white rounded-lg px-3 py-2 text-xs shadow-xl pointer-events-none z-10 flex flex-col gap-1 border border-slate-700 font-sans"
+            className="absolute top-3 right-4 bg-white/95 backdrop-blur-sm border border-[#e3e8ee] rounded-xl p-3 shadow-[0_4px_14px_rgba(10,37,64,0.12)] text-xs space-y-1 pointer-events-none transition-all z-10"
           >
-            <div className="font-semibold text-slate-200 border-b border-slate-700 pb-1 flex items-center justify-between gap-4">
-              <span>{hoveredPoint.displayLabel}</span>
-              <span className="text-[10px] text-slate-400">{hoveredPoint.unitsSold} units sold</span>
+            <div className="font-bold text-[#0a2540] border-b border-[#e3e8ee] pb-1">
+              {hoveredPoint.label}
             </div>
-            <div className="flex items-center justify-between gap-6">
-              <span className="text-amber-400">Total Revenue:</span>
-              <span className="font-bold">{formatINR(hoveredPoint.revenue)}</span>
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-[#425466]">Revenue:</span>
+              <span className="font-bold text-[#635bff]">{formatINR(hoveredPoint.revenue)}</span>
             </div>
-            <div className="flex items-center justify-between gap-6">
-              <span className="text-emerald-400">Net Profit:</span>
-              <span className="font-bold">+{formatINR(hoveredPoint.profit)}</span>
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-[#425466]">Net Profit:</span>
+              <span className="font-bold text-[#059669]">+{formatINR(hoveredPoint.profit)}</span>
             </div>
-            <div className="text-[10px] text-slate-400 text-right">
-              Margin: {hoveredPoint.revenue > 0 ? ((hoveredPoint.profit / hoveredPoint.revenue) * 100).toFixed(1) : 0}%
+            <div className="flex items-center justify-between gap-4 text-[10px] text-slate-400 pt-0.5">
+              <span>Units Sold:</span>
+              <span className="font-medium">{hoveredPoint.unitsSold} units</span>
             </div>
           </div>
         )}
@@ -226,43 +231,50 @@ interface CategoryBarChartProps {
     revenue: number;
     profit: number;
     unitsSold: number;
-    profitMarginPercent: number;
+    productCount: number;
   }[];
 }
 
 export const CategoryBarChart: React.FC<CategoryBarChartProps> = ({ categories }) => {
   if (!categories || categories.length === 0) {
     return (
-      <div className="h-44 flex items-center justify-center text-xs text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-        No category sales data recorded yet.
+      <div className="h-48 flex items-center justify-center text-xs text-[#425466] bg-[#f6f9fc] rounded-xl border border-dashed border-[#e3e8ee]">
+        No category sales recorded yet.
       </div>
     );
   }
 
-  const maxRev = Math.max(...categories.map(c => c.revenue), 1);
+  const maxRevenue = Math.max(...categories.map(c => c.revenue), 10);
 
   return (
     <div className="space-y-3">
-      {categories.slice(0, 6).map((cat, idx) => {
-        const revPercent = Math.max(8, (cat.revenue / maxRev) * 100);
+      {categories.map((cat) => {
+        const revWidthPercent = Math.min(100, Math.max(6, (cat.revenue / maxRevenue) * 100));
+        const profitMargin = cat.revenue > 0 ? ((cat.profit / cat.revenue) * 100).toFixed(1) : '0';
+
         return (
-          <div key={idx} className="space-y-1">
+          <div key={cat.category} className="space-y-1">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-slate-800 truncate max-w-[200px]">{cat.category}</span>
-              <div className="flex items-center gap-3">
-                <span className="font-bold text-slate-900">{formatINR(cat.revenue)}</span>
-                <span className="text-[11px] text-emerald-700 font-medium">+{formatINR(cat.profit)}</span>
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-[#0a2540]">{cat.category}</span>
+                <span className="text-[10px] text-[#425466]">
+                  ({cat.productCount} SKUs · {cat.unitsSold} units)
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-[#0a2540]">{formatINR(cat.revenue)}</span>
+                <span className="text-[10px] font-semibold text-[#059669]">
+                  +{formatINR(cat.profit)} ({profitMargin}%)
+                </span>
               </div>
             </div>
-            <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden flex">
+
+            {/* Gradient Bar in Stripe Style */}
+            <div className="h-2.5 w-full bg-[#f6f9fc] rounded-full overflow-hidden border border-[#e3e8ee]/60">
               <div
-                className="bg-amber-500 h-full rounded-full transition-all duration-500"
-                style={{ width: `${revPercent}%` }}
+                className="h-full rounded-full bg-gradient-to-r from-[#635bff] to-[#00d4ff] transition-all duration-500"
+                style={{ width: `${revWidthPercent}%` }}
               />
-            </div>
-            <div className="flex items-center justify-between text-[10px] text-slate-400">
-              <span>{cat.unitsSold} units sold</span>
-              <span>{cat.profitMarginPercent}% profit margin</span>
             </div>
           </div>
         );
