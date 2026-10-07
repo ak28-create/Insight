@@ -1,0 +1,6 @@
+{
+  "name": "InSight",
+  "description": "Smart Inventory Management System with AI Integration for Indian Retailers. Stock tracking, demand forecasting, profit analytics, and Codey conversational business assistant.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
